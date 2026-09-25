@@ -1,0 +1,13 @@
+{
+  "extends": "../../tsconfig.base.json",
+  "compilerOptions": {
+    "noEmit": true,
+    "declaration": false,
+    "rootDir": "../..",
+    "types": ["node", "vitest"]
+  },
+  "include": [
+    "./**/*.ts",
+    "../../packages/core/src/**/*.ts"
+  ]
+}

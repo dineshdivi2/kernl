@@ -1,0 +1,89 @@
+{
+  "schemaVersion": "1.0",
+  "system": { "id": "jobs-system", "version": "2.0.0" },
+  "airVersion": "air-002a-queued-contract",
+  "components": [
+    {
+      "id": "api",
+      "version": "2.0.0",
+      "kind": "API",
+      "sourcePath": "src/api.ts",
+      "writeScopes": ["src/api.ts"],
+      "provides": [
+        { "id": "http-api", "capability": "jobs.http", "version": "1.0.0", "contract": "public-api-v1" }
+      ],
+      "requires": [
+        { "id": "enqueue-job", "capability": "jobs.enqueue", "version": "1.0.0", "contract": "queued-job-v1", "optional": false }
+      ],
+      "lifecycle": { "initialState": "ACTIVE", "replacement": "DRAIN_THEN_REPLACE", "drainTimeoutMs": 30000, "requireCleanup": true }
+    },
+    {
+      "id": "queue",
+      "version": "1.0.0",
+      "kind": "QUEUE",
+      "sourcePath": "src/queue.ts",
+      "writeScopes": ["src/queue.ts"],
+      "provides": [
+        { "id": "enqueue-job", "capability": "jobs.enqueue", "version": "1.0.0", "contract": "queued-job-v1" },
+        { "id": "dequeue-job", "capability": "jobs.dequeue", "version": "1.0.0", "contract": "queued-job-v1" }
+      ],
+      "requires": [],
+      "lifecycle": { "initialState": "ACTIVE", "replacement": "DRAIN_THEN_REPLACE", "drainTimeoutMs": 30000, "requireCleanup": true }
+    },
+    {
+      "id": "worker",
+      "version": "2.0.0",
+      "kind": "WORKER",
+      "sourcePath": "src/worker.ts",
+      "writeScopes": ["src/worker.ts"],
+      "provides": [],
+      "requires": [
+        { "id": "dequeue-job", "capability": "jobs.dequeue", "version": "1.0.0", "contract": "queued-job-v1", "optional": false },
+        { "id": "write-result", "capability": "results.write", "version": "1.0.0", "contract": "result-v1", "optional": false }
+      ],
+      "lifecycle": { "initialState": "ACTIVE", "replacement": "DRAIN_THEN_REPLACE", "drainTimeoutMs": 30000, "requireCleanup": true }
+    },
+    {
+      "id": "store",
+      "version": "1.0.0",
+      "kind": "STORE",
+      "sourcePath": "src/store.ts",
+      "writeScopes": ["src/store.ts"],
+      "provides": [
+        { "id": "write-result", "capability": "results.write", "version": "1.0.0", "contract": "result-v1" }
+      ],
+      "requires": [],
+      "lifecycle": { "initialState": "ACTIVE", "replacement": "DRAIN_THEN_REPLACE", "drainTimeoutMs": 30000, "requireCleanup": true }
+    }
+  ],
+  "bindings": [
+    { "id": "api-to-queue", "consumerId": "api", "requirementId": "enqueue-job", "providerId": "queue", "capabilityId": "jobs.enqueue", "providerVersion": "1.0.0" },
+    { "id": "worker-to-queue", "consumerId": "worker", "requirementId": "dequeue-job", "providerId": "queue", "capabilityId": "jobs.dequeue", "providerVersion": "1.0.0" },
+    { "id": "worker-to-store", "consumerId": "worker", "requirementId": "write-result", "providerId": "store", "capabilityId": "results.write", "providerVersion": "1.0.0" }
+  ],
+  "contracts": [
+    { "id": "public-api-v1", "kind": "API", "version": "1.0.0", "schema": { "submit": { "method": "POST", "path": "/jobs", "request": { "id": "string", "value": "string" }, "status": 202, "response": { "id": "string", "status": "accepted" } }, "read": { "method": "GET", "path": "/jobs/{id}", "status": 200, "response": { "id": "string", "status": "pending|completed", "result": "string?" } } } },
+    { "id": "queued-job-v1", "kind": "EVENT", "version": "1.0.0", "schema": { "eventId": "string", "jobId": "string", "value": "string" } },
+    { "id": "result-v1", "kind": "DATA", "version": "1.0.0", "schema": { "id": "string", "status": "pending|completed", "result": "string?" } }
+  ],
+  "verification": {
+    "gates": [
+      { "id": "typecheck", "command": "pnpm typecheck", "required": true, "timeoutMs": 60000 },
+      { "id": "unit", "command": "pnpm test:unit", "required": true, "timeoutMs": 60000 },
+      { "id": "contract", "command": "pnpm test:contract", "required": true, "timeoutMs": 60000 },
+      { "id": "architecture", "command": "pnpm test:architecture", "required": true, "timeoutMs": 60000 }
+    ]
+  },
+  "effects": [
+    { "id": "write-api-source", "componentId": "api", "effectType": "filesystem.write", "resource": "src/api.ts", "recovery": "REVERSIBLE" },
+    { "id": "write-queue-source", "componentId": "queue", "effectType": "filesystem.write", "resource": "src/queue.ts", "recovery": "REVERSIBLE" },
+    { "id": "write-worker-source", "componentId": "worker", "effectType": "filesystem.write", "resource": "src/worker.ts", "recovery": "REVERSIBLE" },
+    { "id": "write-store-source", "componentId": "store", "effectType": "filesystem.write", "resource": "src/store.ts", "recovery": "REVERSIBLE" },
+    { "id": "promote-workflow", "componentId": "api", "effectType": "workflow.promote", "resource": "kernl/workflows", "recovery": "APPROVAL_GATED", "approvalGateId": "architect-promotion" }
+  ],
+  "approvalGates": [
+    { "id": "architect-promotion", "when": "BEFORE_PROMOTION", "requiredRole": "architect" }
+  ],
+  "change": { "id": "sync-to-queue", "intent": "Replace the synchronous worker call with a versioned queue while preserving the public API and result behavior", "parentAirVersion": "air-001a-sync-contract", "requestedBy": "solution-architect" },
+  "provenance": { "changeId": "sync-to-queue" }
+}

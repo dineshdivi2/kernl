@@ -1,0 +1,14 @@
+packages:
+  - apps/*
+  - packages/*
+
+allowBuilds:
+  esbuild: true
+
+supportedArchitectures:
+  os:
+    - win32
+  cpu:
+    - x64
+  libc:
+    - current

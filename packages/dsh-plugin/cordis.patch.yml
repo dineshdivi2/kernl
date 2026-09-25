@@ -1,0 +1,14 @@
+# Out-of-tree Kernl bundle. Stable ids let profile and one-off overlays replace
+# configuration without modifying this package or the upstream DSH checkout.
+
+- insert:
+    - id: kernl-service
+      name: '@kernl/dsh-plugin'
+      config:
+        baseUrl: 'http://127.0.0.1:43120'
+        routePrefix: '/api/dsh'
+        requestTimeoutMs: 30000
+        maxResponseBytes: 1048576
+
+    - id: kernl-tools
+      name: '@kernl/dsh-plugin/tools'

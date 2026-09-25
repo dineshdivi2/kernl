@@ -1,0 +1,53 @@
+{
+  "schemaVersion": "1.0",
+  "system": { "id": "jobs-system", "version": "2.1.0" },
+  "airVersion": "air-003a-queue-v2-contract",
+  "components": [
+    {
+      "id": "api", "version": "2.0.0", "kind": "API", "sourcePath": "src/api.ts", "writeScopes": ["src/api.ts"],
+      "provides": [{ "id": "http-api", "capability": "jobs.http", "version": "1.0.0", "contract": "public-api-v1" }],
+      "requires": [{ "id": "enqueue-job", "capability": "jobs.enqueue", "version": "1.0.0", "contract": "queued-job-v1", "optional": false }],
+      "lifecycle": { "initialState": "ACTIVE", "replacement": "DRAIN_THEN_REPLACE", "drainTimeoutMs": 30000, "requireCleanup": true }
+    },
+    {
+      "id": "queue", "version": "2.0.0", "kind": "QUEUE", "sourcePath": "src/queue.ts", "writeScopes": ["src/queue.ts"],
+      "provides": [
+        { "id": "enqueue-job", "capability": "jobs.enqueue", "version": "1.0.0", "contract": "queued-job-v1" },
+        { "id": "dequeue-job", "capability": "jobs.dequeue", "version": "1.0.0", "contract": "queued-job-v1" }
+      ],
+      "requires": [],
+      "lifecycle": { "initialState": "ACTIVE", "replacement": "DRAIN_THEN_REPLACE", "drainTimeoutMs": 30000, "requireCleanup": true }
+    },
+    {
+      "id": "worker", "version": "2.0.0", "kind": "WORKER", "sourcePath": "src/worker.ts", "writeScopes": ["src/worker.ts"], "provides": [],
+      "requires": [
+        { "id": "dequeue-job", "capability": "jobs.dequeue", "version": "1.0.0", "contract": "queued-job-v1", "optional": false },
+        { "id": "write-result", "capability": "results.write", "version": "1.0.0", "contract": "result-v1", "optional": false }
+      ],
+      "lifecycle": { "initialState": "ACTIVE", "replacement": "DRAIN_THEN_REPLACE", "drainTimeoutMs": 30000, "requireCleanup": true }
+    },
+    {
+      "id": "store", "version": "1.0.0", "kind": "STORE", "sourcePath": "src/store.ts", "writeScopes": ["src/store.ts"],
+      "provides": [{ "id": "write-result", "capability": "results.write", "version": "1.0.0", "contract": "result-v1" }], "requires": [],
+      "lifecycle": { "initialState": "ACTIVE", "replacement": "DRAIN_THEN_REPLACE", "drainTimeoutMs": 30000, "requireCleanup": true }
+    }
+  ],
+  "bindings": [
+    { "id": "api-to-queue", "consumerId": "api", "requirementId": "enqueue-job", "providerId": "queue", "capabilityId": "jobs.enqueue", "providerVersion": "2.0.0" },
+    { "id": "worker-to-queue", "consumerId": "worker", "requirementId": "dequeue-job", "providerId": "queue", "capabilityId": "jobs.dequeue", "providerVersion": "2.0.0" },
+    { "id": "worker-to-store", "consumerId": "worker", "requirementId": "write-result", "providerId": "store", "capabilityId": "results.write", "providerVersion": "1.0.0" }
+  ],
+  "contracts": [
+    { "id": "public-api-v1", "kind": "API", "version": "1.0.0", "schema": { "submit": { "method": "POST", "path": "/jobs", "request": { "id": "string", "value": "string" }, "status": 202, "response": { "id": "string", "status": "accepted" } }, "read": { "method": "GET", "path": "/jobs/{id}", "status": 200, "response": { "id": "string", "status": "pending|completed", "result": "string?" } } } },
+    { "id": "queued-job-v1", "kind": "EVENT", "version": "1.0.0", "schema": { "eventId": "string", "jobId": "string", "value": "string" } },
+    { "id": "result-v1", "kind": "DATA", "version": "1.0.0", "schema": { "id": "string", "status": "pending|completed", "result": "string?" } }
+  ],
+  "verification": { "gates": [{ "id": "architecture", "command": "pnpm test:architecture", "required": true, "timeoutMs": 60000 }] },
+  "effects": [
+    { "id": "replace-queue", "componentId": "queue", "effectType": "provider.replace", "resource": "queue:1.0.0-to-2.0.0", "recovery": "COMPENSATABLE" },
+    { "id": "promote-workflow", "componentId": "api", "effectType": "workflow.promote", "resource": "kernl/workflows", "recovery": "APPROVAL_GATED", "approvalGateId": "architect-promotion" }
+  ],
+  "approvalGates": [{ "id": "architect-promotion", "when": "BEFORE_PROMOTION", "requiredRole": "architect" }],
+  "change": { "id": "replace-queue-v2", "intent": "Safely rebind consumers from queue v1 to queue v2 and drain v1", "parentAirVersion": "air-002a-queued-contract", "requestedBy": "solution-architect" },
+  "provenance": { "changeId": "replace-queue-v2" }
+}

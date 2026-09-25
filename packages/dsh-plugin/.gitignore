@@ -1,0 +1,5 @@
+# This out-of-tree bundle is intentionally precompiled so DSH can install it
+# without resolving TypeScript or workspace packages.
+!dist/
+!dist/*.js
+!dist/*.d.ts

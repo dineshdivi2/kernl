@@ -1,0 +1,26 @@
+{
+  "schemaVersion": "1.0",
+  "system": { "id": "invalid-system", "version": "1.0.0" },
+  "airVersion": "invalid-binding",
+  "components": [
+    {
+      "id": "consumer", "version": "1.0.0", "kind": "SERVICE", "sourcePath": "fixture/consumer", "writeScopes": ["fixture/consumer"], "provides": [],
+      "requires": [{ "id": "queue", "capability": "jobs.enqueue", "version": "1.0.0", "contract": "event-v1", "optional": false }],
+      "lifecycle": { "initialState": "ACTIVE", "replacement": "DRAIN_THEN_REPLACE", "drainTimeoutMs": 30000, "requireCleanup": true }
+    },
+    {
+      "id": "provider", "version": "1.0.0", "kind": "QUEUE", "sourcePath": "fixture/provider", "writeScopes": ["fixture/provider"],
+      "provides": [{ "id": "dequeue", "capability": "jobs.dequeue", "version": "1.0.0", "contract": "event-v1" }], "requires": [],
+      "lifecycle": { "initialState": "ACTIVE", "replacement": "DRAIN_THEN_REPLACE", "drainTimeoutMs": 30000, "requireCleanup": true }
+    }
+  ],
+  "bindings": [
+    { "id": "invalid", "consumerId": "consumer", "requirementId": "queue", "providerId": "provider", "capabilityId": "jobs.dequeue", "providerVersion": "9.9.9" }
+  ],
+  "contracts": [{ "id": "event-v1", "kind": "EVENT", "version": "1.0.0", "schema": {} }],
+  "verification": { "gates": [{ "id": "architecture", "command": "pnpm test:architecture", "required": true, "timeoutMs": 60000 }] },
+  "effects": [],
+  "approvalGates": [],
+  "change": { "id": "invalid-change", "intent": "This change must be rejected before agents run" },
+  "provenance": { "changeId": "invalid-change" }
+}

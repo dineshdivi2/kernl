@@ -1,0 +1,21 @@
+node_modules/
+dist/
+.vite/
+.kernl/
+data/*.sqlite
+data/*.sqlite-shm
+data/*.sqlite-wal
+apps/web/dist/
+artifacts/runs/
+artifacts/workflow-replay/
+coverage/
+*.log
+.env
+.env.*
+!.env.example
+
+# Alpha V2 evidence: transient per-run packs are ignored; curated scenario packs are force-added at release time.
+artifacts/alpha-v2/
+artifacts/replays/
+.firecrawl/
+artifacts/product-checks/

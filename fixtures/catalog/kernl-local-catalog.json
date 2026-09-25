@@ -1,0 +1,218 @@
+{
+  "schemaVersion": "1.0",
+  "manifests": [
+    {
+      "schemaVersion": "1.0",
+      "component": { "id": "http-api", "type": "HTTP_API", "version": "1.0.0", "description": "Public HTTP front door invoking workers synchronously." },
+      "provides": [{ "id": "http-api", "capability": "jobs.http", "version": "1.0.0", "contract": "public-api-v1" }],
+      "requires": [{ "id": "execute-job", "capability": "jobs.execute", "version": "1.0.0", "contract": "sync-job-v1", "optional": false }],
+      "bindingRules": [
+        { "capability": "jobs.http", "role": "PROVIDES", "withComponentTypes": ["HTTP_API"], "contracts": ["public-api-v1"] },
+        { "capability": "jobs.execute", "role": "REQUIRES", "withComponentTypes": ["WORKER"], "contracts": ["sync-job-v1"] }
+      ],
+      "contracts": [{ "id": "public-api-v1", "kind": "API", "version": "1.0.0", "schema": { "submit": { "method": "POST", "path": "/jobs", "status": 202 }, "read": { "method": "GET", "path": "/jobs/{id}", "status": 200 } } }],
+      "sourceLayout": { "sourcePath": "src", "defaultFiles": [{ "path": "src/api.ts", "purpose": "entry" }], "writeScopes": ["src/api.ts"] },
+      "generation": { "template": "kernl.http-api@1", "inputs": { "contract": "public-api-v1" }, "generates": [{ "path": "src/api.ts", "purpose": "entry" }], "modifies": [] },
+      "verification": { "gates": [{ "id": "build", "command": "tsc -p tsconfig.json", "required": true, "timeoutMs": 60000 }, { "id": "contract", "command": "node tests/public-contract.mjs", "required": true, "timeoutMs": 60000 }] },
+      "lifecycle": { "initialState": "ACTIVE", "replacement": "DRAIN_THEN_REPLACE", "drainTimeoutMs": 30000, "requireCleanup": true },
+      "replacement": { "supersedes": [], "transparentRebind": false, "requiresDrain": true },
+      "effects": [{ "id": "write-api-source", "componentId": "http-api", "effectType": "filesystem.write", "resource": "src/api.ts", "recovery": "REVERSIBLE" }],
+      "approvals": [],
+      "provenance": { "catalog": "kernl-local-v1", "notes": "Mirrors the verified job-system API component." }
+    },
+    {
+      "schemaVersion": "1.0",
+      "component": { "id": "http-api", "type": "HTTP_API", "version": "2.0.0", "description": "Queued producer: publishes JobEvents instead of invoking workers." },
+      "provides": [{ "id": "http-api", "capability": "jobs.http", "version": "1.0.0", "contract": "public-api-v1" }],
+      "requires": [{ "id": "enqueue-job", "capability": "jobs.enqueue", "version": "1.0.0", "contract": "queued-job-v1", "optional": false }],
+      "bindingRules": [
+        { "capability": "jobs.http", "role": "PROVIDES", "withComponentTypes": ["HTTP_API"], "contracts": ["public-api-v1"] },
+        { "capability": "jobs.enqueue", "role": "REQUIRES", "withComponentTypes": ["QUEUE"], "contracts": ["queued-job-v1"] }
+      ],
+      "contracts": [{ "id": "public-api-v1", "kind": "API", "version": "1.0.0", "schema": { "submit": { "method": "POST", "path": "/jobs", "status": 202 }, "read": { "method": "GET", "path": "/jobs/{id}", "status": 200 } } }],
+      "sourceLayout": { "sourcePath": "src", "defaultFiles": [{ "path": "src/api.ts", "purpose": "entry" }], "writeScopes": ["src/api.ts"] },
+      "generation": { "template": "kernl.http-api-queued@1", "inputs": { "contract": "public-api-v1" }, "generates": [], "modifies": [{ "path": "src/api.ts", "purpose": "entry" }] },
+      "verification": { "gates": [{ "id": "build", "command": "tsc -p tsconfig.json", "required": true, "timeoutMs": 60000 }, { "id": "contract", "command": "node tests/public-contract.mjs", "required": true, "timeoutMs": 60000 }] },
+      "lifecycle": { "initialState": "ACTIVE", "replacement": "DRAIN_THEN_REPLACE", "drainTimeoutMs": 30000, "requireCleanup": true },
+      "replacement": { "supersedes": ["1.0.0"], "transparentRebind": false, "requiresDrain": true },
+      "effects": [{ "id": "write-api-source", "componentId": "http-api", "effectType": "filesystem.write", "resource": "src/api.ts", "recovery": "REVERSIBLE" }],
+      "approvals": [],
+      "provenance": { "catalog": "kernl-local-v1", "notes": "Public HTTP contract unchanged; only the execution binding moves to a queue." }
+    },
+    {
+      "schemaVersion": "1.0",
+      "component": { "id": "worker", "type": "WORKER", "version": "1.0.0", "description": "Queue consumer that completes jobs into the result store." },
+      "provides": [{ "id": "execute-job", "capability": "jobs.execute", "version": "1.0.0", "contract": "sync-job-v1" }],
+      "requires": [
+        { "id": "dequeue-job", "capability": "jobs.dequeue", "version": "1.0.0", "contract": "queued-job-v1", "optional": false },
+        { "id": "write-result", "capability": "results.write", "version": "1.0.0", "contract": "result-v1", "optional": false }
+      ],
+      "bindingRules": [
+        { "capability": "jobs.execute", "role": "PROVIDES", "withComponentTypes": ["WORKER"], "contracts": ["sync-job-v1"] },
+        { "capability": "jobs.dequeue", "role": "REQUIRES", "withComponentTypes": ["QUEUE"], "contracts": ["queued-job-v1"] },
+        { "capability": "results.write", "role": "REQUIRES", "withComponentTypes": ["STORE"], "contracts": ["result-v1"] }
+      ],
+      "contracts": [{ "id": "sync-job-v1", "kind": "TOOL", "version": "1.0.0", "schema": { "id": "string", "value": "string" } }],
+      "sourceLayout": { "sourcePath": "src", "defaultFiles": [{ "path": "src/worker.ts", "purpose": "entry" }], "writeScopes": ["src/worker.ts"] },
+      "generation": { "template": "kernl.worker-queue@1", "inputs": {}, "generates": [{ "path": "src/worker.ts", "purpose": "entry" }], "modifies": [{ "path": "src/worker.ts", "purpose": "entry" }] },
+      "verification": { "gates": [{ "id": "build", "command": "tsc -p tsconfig.json", "required": true, "timeoutMs": 60000 }, { "id": "unit", "command": "node tests/unit.mjs", "required": true, "timeoutMs": 60000 }, { "id": "idempotency", "command": "node tests/idempotency.mjs", "required": true, "timeoutMs": 60000 }] },
+      "lifecycle": { "initialState": "ACTIVE", "replacement": "DRAIN_THEN_REPLACE", "drainTimeoutMs": 30000, "requireCleanup": true },
+      "replacement": { "supersedes": [], "transparentRebind": false, "requiresDrain": true },
+      "effects": [{ "id": "write-worker-source", "componentId": "worker", "effectType": "filesystem.write", "resource": "src/worker.ts", "recovery": "REVERSIBLE" }],
+      "approvals": [],
+      "provenance": { "catalog": "kernl-local-v1", "notes": "v1.0.0 consumes queue events without retry awareness." }
+    },
+    {
+      "schemaVersion": "1.0",
+      "component": { "id": "worker", "type": "WORKER", "version": "1.5.0", "description": "Queue consumer completing jobs into the result store." },
+      "provides": [],
+      "requires": [
+        { "id": "dequeue-job", "capability": "jobs.dequeue", "version": "1.0.0", "contract": "queued-job-v1", "optional": false },
+        { "id": "write-result", "capability": "results.write", "version": "1.0.0", "contract": "result-v1", "optional": false }
+      ],
+      "bindingRules": [
+        { "capability": "jobs.dequeue", "role": "REQUIRES", "withComponentTypes": ["QUEUE"], "contracts": ["queued-job-v1"] },
+        { "capability": "results.write", "role": "REQUIRES", "withComponentTypes": ["STORE"], "contracts": ["result-v1"] }
+      ],
+      "contracts": [],
+      "sourceLayout": { "sourcePath": "src", "defaultFiles": [{ "path": "src/worker.ts", "purpose": "entry" }], "writeScopes": ["src/worker.ts"] },
+      "generation": { "template": "kernl.worker-queue@1", "inputs": {}, "generates": [], "modifies": [{ "path": "src/worker.ts", "purpose": "entry" }] },
+      "verification": { "gates": [{ "id": "build", "command": "tsc -p tsconfig.json", "required": true, "timeoutMs": 60000 }, { "id": "unit", "command": "node tests/unit.mjs", "required": true, "timeoutMs": 60000 }, { "id": "idempotency", "command": "node tests/idempotency.mjs", "required": true, "timeoutMs": 60000 }] },
+      "lifecycle": { "initialState": "ACTIVE", "replacement": "DRAIN_THEN_REPLACE", "drainTimeoutMs": 30000, "requireCleanup": true },
+      "replacement": { "supersedes": ["1.0.0"], "transparentRebind": false, "requiresDrain": true },
+      "effects": [{ "id": "write-worker-source", "componentId": "worker", "effectType": "filesystem.write", "resource": "src/worker.ts", "recovery": "REVERSIBLE" }],
+      "approvals": [],
+      "provenance": { "catalog": "kernl-local-v1", "notes": "Queue consumer shape used by the sync-to-queue evolution." }
+    },
+    {
+      "schemaVersion": "1.0",
+      "component": { "id": "worker", "type": "WORKER", "version": "2.0.0", "description": "Retry-aware queue consumer with dead-letter routing." },
+      "provides": [],
+      "requires": [
+        { "id": "dequeue-job", "capability": "jobs.dequeue", "version": "1.0.0", "contract": "queued-job-v1", "optional": false },
+        { "id": "write-result", "capability": "results.write", "version": "1.0.0", "contract": "result-v1", "optional": false },
+        { "id": "retry-policy", "capability": "jobs.retry", "version": "1.0.0", "contract": "retry-policy-v1", "optional": false },
+        { "id": "dead-letter", "capability": "jobs.dead-letter", "version": "1.0.0", "contract": "dead-letter-v1", "optional": false }
+      ],
+      "bindingRules": [
+        { "capability": "jobs.dequeue", "role": "REQUIRES", "withComponentTypes": ["QUEUE"], "contracts": ["queued-job-v1"] },
+        { "capability": "results.write", "role": "REQUIRES", "withComponentTypes": ["STORE"], "contracts": ["result-v1"] },
+        { "capability": "jobs.retry", "role": "REQUIRES", "withComponentTypes": ["POLICY"], "contracts": ["retry-policy-v1"] },
+        { "capability": "jobs.dead-letter", "role": "REQUIRES", "withComponentTypes": ["FAILURE_SINK"], "contracts": ["dead-letter-v1"] }
+      ],
+      "contracts": [],
+      "sourceLayout": { "sourcePath": "src", "defaultFiles": [{ "path": "src/worker.ts", "purpose": "entry" }], "writeScopes": ["src/worker.ts"] },
+      "generation": { "template": "kernl.worker-retry@1", "inputs": {}, "generates": [], "modifies": [{ "path": "src/worker.ts", "purpose": "entry" }] },
+      "verification": { "gates": [{ "id": "build", "command": "tsc -p tsconfig.json", "required": true, "timeoutMs": 60000 }, { "id": "unit", "command": "node tests/unit.mjs", "required": true, "timeoutMs": 60000 }, { "id": "idempotency", "command": "node tests/idempotency.mjs", "required": true, "timeoutMs": 60000 }, { "id": "retry-contract", "command": "node tests/retry-contract.mjs", "required": true, "timeoutMs": 60000 }] },
+      "lifecycle": { "initialState": "ACTIVE", "replacement": "DRAIN_THEN_REPLACE", "drainTimeoutMs": 30000, "requireCleanup": true },
+      "replacement": { "supersedes": ["1.0.0", "1.5.0"], "transparentRebind": false, "requiresDrain": true },
+      "effects": [{ "id": "write-worker-source", "componentId": "worker", "effectType": "filesystem.write", "resource": "src/worker.ts", "recovery": "REVERSIBLE" }],
+      "approvals": [],
+      "provenance": { "catalog": "kernl-local-v1", "notes": "v2.0.0 adds bounded retry plus dead-letter routing on exhausted attempts." }
+    },
+    {
+      "schemaVersion": "1.0",
+      "component": { "id": "queue", "type": "QUEUE", "version": "1.0.0", "description": "In-memory versioned job queue, microtask delivery." },
+      "provides": [
+        { "id": "enqueue-job", "capability": "jobs.enqueue", "version": "1.0.0", "contract": "queued-job-v1" },
+        { "id": "dequeue-job", "capability": "jobs.dequeue", "version": "1.0.0", "contract": "queued-job-v1" }
+      ],
+      "requires": [],
+      "bindingRules": [
+        { "capability": "jobs.enqueue", "role": "PROVIDES", "withComponentTypes": ["HTTP_API", "WORKER"], "contracts": ["queued-job-v1"] },
+        { "capability": "jobs.dequeue", "role": "PROVIDES", "withComponentTypes": ["WORKER"], "contracts": ["queued-job-v1"] }
+      ],
+      "contracts": [{ "id": "queued-job-v1", "kind": "EVENT", "version": "1.0.0", "schema": { "eventId": "string", "jobId": "string", "value": "string" } }],
+      "sourceLayout": { "sourcePath": "src", "defaultFiles": [{ "path": "src/queue.ts", "purpose": "entry" }], "writeScopes": ["src/queue.ts"] },
+      "generation": { "template": "kernl.queue-microtask@1", "inputs": {}, "generates": [{ "path": "src/queue.ts", "purpose": "entry" }], "modifies": [] },
+      "verification": { "gates": [{ "id": "build", "command": "tsc -p tsconfig.json", "required": true, "timeoutMs": 60000 }, { "id": "idempotency", "command": "node tests/idempotency.mjs", "required": true, "timeoutMs": 60000 }] },
+      "lifecycle": { "initialState": "ACTIVE", "replacement": "DRAIN_THEN_REPLACE", "drainTimeoutMs": 30000, "requireCleanup": true },
+      "replacement": { "supersedes": [], "transparentRebind": true, "requiresDrain": true },
+      "effects": [
+        { "id": "write-queue-source", "componentId": "queue", "effectType": "filesystem.write", "resource": "src/queue.ts", "recovery": "REVERSIBLE" },
+        { "id": "replace-queue", "componentId": "queue", "effectType": "provider.replace", "resource": "queue", "recovery": "COMPENSATABLE" }
+      ],
+      "approvals": [],
+      "provenance": { "catalog": "kernl-local-v1", "notes": "Queue provider v1; replaced by queue v2 through the drain lifecycle." }
+    },
+    {
+      "schemaVersion": "1.0",
+      "component": { "id": "queue", "type": "QUEUE", "version": "2.0.0", "description": "Queue provider v2 with delivery receipts; event contract unchanged." },
+      "provides": [
+        { "id": "enqueue-job", "capability": "jobs.enqueue", "version": "1.0.0", "contract": "queued-job-v1" },
+        { "id": "dequeue-job", "capability": "jobs.dequeue", "version": "1.0.0", "contract": "queued-job-v1" }
+      ],
+      "requires": [],
+      "bindingRules": [
+        { "capability": "jobs.enqueue", "role": "PROVIDES", "withComponentTypes": ["HTTP_API", "WORKER"], "contracts": ["queued-job-v1"] },
+        { "capability": "jobs.dequeue", "role": "PROVIDES", "withComponentTypes": ["WORKER"], "contracts": ["queued-job-v1"] }
+      ],
+      "contracts": [{ "id": "queued-job-v1", "kind": "EVENT", "version": "1.0.0", "schema": { "eventId": "string", "jobId": "string", "value": "string" } }],
+      "sourceLayout": { "sourcePath": "src", "defaultFiles": [{ "path": "src/queue.ts", "purpose": "entry" }], "writeScopes": ["src/queue.ts"] },
+      "generation": { "template": "kernl.queue-microtask-v2@1", "inputs": {}, "generates": [{ "path": "src/queue.ts", "purpose": "entry" }], "modifies": [] },
+      "verification": { "gates": [{ "id": "build", "command": "tsc -p tsconfig.json", "required": true, "timeoutMs": 60000 }, { "id": "idempotency", "command": "node tests/idempotency.mjs", "required": true, "timeoutMs": 60000 }] },
+      "lifecycle": { "initialState": "ACTIVE", "replacement": "DRAIN_THEN_REPLACE", "drainTimeoutMs": 30000, "requireCleanup": true },
+      "replacement": { "supersedes": ["1.0.0"], "transparentRebind": true, "requiresDrain": true },
+      "effects": [
+        { "id": "write-queue-source", "componentId": "queue", "effectType": "filesystem.write", "resource": "src/queue.ts", "recovery": "REVERSIBLE" },
+        { "id": "replace-queue", "componentId": "queue", "effectType": "provider.replace", "resource": "queue", "recovery": "COMPENSATABLE" }
+      ],
+      "approvals": [],
+      "provenance": { "catalog": "kernl-local-v1", "notes": "Queue provider v2; identical event contract enables transparent consumer rebinding." }
+    },
+    {
+      "schemaVersion": "1.0",
+      "component": { "id": "result-store", "type": "STORE", "version": "1.0.0", "description": "Durable job result records." },
+      "provides": [{ "id": "write-result", "capability": "results.write", "version": "1.0.0", "contract": "result-v1" }],
+      "requires": [],
+      "bindingRules": [
+        { "capability": "results.write", "role": "PROVIDES", "withComponentTypes": ["WORKER"], "contracts": ["result-v1"] }
+      ],
+      "contracts": [{ "id": "result-v1", "kind": "DATA", "version": "1.0.0", "schema": { "id": "string", "status": "pending|completed", "result": "string?" } }],
+      "sourceLayout": { "sourcePath": "src", "defaultFiles": [{ "path": "src/store.ts", "purpose": "entry" }], "writeScopes": ["src/store.ts"] },
+      "generation": { "template": "kernl.result-store@1", "inputs": {}, "generates": [{ "path": "src/store.ts", "purpose": "entry" }], "modifies": [] },
+      "verification": { "gates": [{ "id": "build", "command": "tsc -p tsconfig.json", "required": true, "timeoutMs": 60000 }, { "id": "unit", "command": "node tests/unit.mjs", "required": true, "timeoutMs": 60000 }] },
+      "lifecycle": { "initialState": "ACTIVE", "replacement": "DRAIN_THEN_REPLACE", "drainTimeoutMs": 30000, "requireCleanup": true },
+      "replacement": { "supersedes": [], "transparentRebind": true, "requiresDrain": true },
+      "effects": [{ "id": "write-store-source", "componentId": "result-store", "effectType": "filesystem.write", "resource": "src/store.ts", "recovery": "REVERSIBLE" }],
+      "approvals": [],
+      "provenance": { "catalog": "kernl-local-v1", "notes": "Mirrors the verified store component." }
+    },
+    {
+      "schemaVersion": "1.0",
+      "component": { "id": "retry-policy", "type": "POLICY", "version": "1.0.0", "description": "Bounded retry policy with deterministic backoff." },
+      "provides": [{ "id": "retry-policy", "capability": "jobs.retry", "version": "1.0.0", "contract": "retry-policy-v1" }],
+      "requires": [],
+      "bindingRules": [
+        { "capability": "jobs.retry", "role": "PROVIDES", "withComponentTypes": ["WORKER"], "contracts": ["retry-policy-v1"] }
+      ],
+      "contracts": [{ "id": "retry-policy-v1", "kind": "DATA", "version": "1.0.0", "schema": { "maxAttempts": "number=3", "backoffMs": "number=0" } }],
+      "sourceLayout": { "sourcePath": "src", "defaultFiles": [{ "path": "src/retry.ts", "purpose": "entry" }], "writeScopes": ["src/retry.ts"] },
+      "generation": { "template": "kernl.retry-policy@1", "inputs": { "maxAttempts": 3 }, "generates": [{ "path": "src/retry.ts", "purpose": "entry" }], "modifies": [] },
+      "verification": { "gates": [{ "id": "build", "command": "tsc -p tsconfig.json", "required": true, "timeoutMs": 60000 }, { "id": "unit", "command": "node tests/unit.mjs", "required": true, "timeoutMs": 60000 }] },
+      "lifecycle": { "initialState": "ACTIVE", "replacement": "DRAIN_THEN_REPLACE", "drainTimeoutMs": 30000, "requireCleanup": true },
+      "replacement": { "supersedes": [], "transparentRebind": true, "requiresDrain": false },
+      "effects": [{ "id": "write-retry-source", "componentId": "retry-policy", "effectType": "filesystem.write", "resource": "src/retry.ts", "recovery": "REVERSIBLE" }],
+      "approvals": [],
+      "provenance": { "catalog": "kernl-local-v1", "notes": "Pure in-process policy; no queue involvement." }
+    },
+    {
+      "schemaVersion": "1.0",
+      "component": { "id": "dead-letter", "type": "FAILURE_SINK", "version": "1.0.0", "description": "Dead-letter sink recording events that exhausted retries." },
+      "provides": [{ "id": "dead-letter", "capability": "jobs.dead-letter", "version": "1.0.0", "contract": "dead-letter-v1" }],
+      "requires": [],
+      "bindingRules": [
+        { "capability": "jobs.dead-letter", "role": "PROVIDES", "withComponentTypes": ["WORKER"], "contracts": ["dead-letter-v1"] }
+      ],
+      "contracts": [{ "id": "dead-letter-v1", "kind": "EVENT", "version": "1.0.0", "schema": { "eventId": "string", "jobId": "string", "reason": "string", "attempts": "number" } }],
+      "sourceLayout": { "sourcePath": "src", "defaultFiles": [{ "path": "src/dead-letter.ts", "purpose": "entry" }], "writeScopes": ["src/dead-letter.ts"] },
+      "generation": { "template": "kernl.dead-letter@1", "inputs": {}, "generates": [{ "path": "src/dead-letter.ts", "purpose": "entry" }], "modifies": [] },
+      "verification": { "gates": [{ "id": "build", "command": "tsc -p tsconfig.json", "required": true, "timeoutMs": 60000 }, { "id": "unit", "command": "node tests/unit.mjs", "required": true, "timeoutMs": 60000 }, { "id": "dlq-contract", "command": "node tests/dlq-contract.mjs", "required": true, "timeoutMs": 60000 }] },
+      "lifecycle": { "initialState": "ACTIVE", "replacement": "DRAIN_THEN_REPLACE", "drainTimeoutMs": 30000, "requireCleanup": true },
+      "replacement": { "supersedes": [], "transparentRebind": true, "requiresDrain": false },
+      "effects": [{ "id": "write-dlq-source", "componentId": "dead-letter", "effectType": "filesystem.write", "resource": "src/dead-letter.ts", "recovery": "REVERSIBLE" }],
+      "approvals": [],
+      "provenance": { "catalog": "kernl-local-v1", "notes": "Failure-handling component proving AIR-authored evolution beyond the queue demo." }
+    }
+  ]
+}

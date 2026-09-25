@@ -1,0 +1,6 @@
+* text=auto eol=lf
+*.png binary
+*.zip binary
+*.bundle binary
+artifacts/demo-run/** -text -whitespace
+artifacts/product-alpha/** -text -whitespace

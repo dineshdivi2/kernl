@@ -1,0 +1,12 @@
+{
+  "name": "kernl-job-system-fixture",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "build": "tsc -p tsconfig.json",
+    "test:unit": "node tests/unit.mjs",
+    "test:contract": "node tests/public-contract.mjs",
+    "test:idempotency": "node tests/idempotency.mjs"
+  }
+}

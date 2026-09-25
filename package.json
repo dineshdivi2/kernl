@@ -1,0 +1,41 @@
+{
+  "name": "kernl-prototype",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "packageManager": "pnpm@11.7.0",
+  "engines": {
+    "node": ">=22.19.0"
+  },
+  "scripts": {
+    "build": "pnpm -r --if-present build",
+    "typecheck": "pnpm -r --if-present typecheck",
+    "test": "vitest run --configLoader runner && pnpm --filter @kernl/web test && pnpm --filter @kernl/dsh-plugin test",
+    "test:watch": "vitest --configLoader runner",
+    "demo": "tsx scripts/demo.ts",
+    "replay": "tsx scripts/replay.ts",
+    "workflow:replay": "tsx scripts/workflow-replay.ts",
+    "dev": "tsx scripts/dev.ts",
+    "start": "tsx apps/server/src/index.ts",
+    "verify": "pnpm typecheck && pnpm test && pnpm build && pnpm dsh:smoke && pnpm demo -- --approve verification-architect --role architect && pnpm replay && pnpm workflow:replay",
+    "dsh:smoke": "tsx packages/dsh-plugin/scripts/smoke.ts",
+    "providers:smoke": "tsx scripts/provider-smoke.ts",
+    "product:demo": "tsx scripts/product-demo.ts"
+  },
+  "dependencies": {
+    "@kernl/core": "workspace:*",
+    "@kernl/runtime": "workspace:*",
+    "zod": "^4.4.3"
+  },
+  "devDependencies": {
+    "@types/node": "^22.20.0",
+    "@types/react": "^18.3.31",
+    "@types/react-dom": "^18.3.7",
+    "@vitejs/plugin-react": "^4.7.0",
+    "fast-check": "^4.8.0",
+    "tsx": "^4.22.4",
+    "typescript": "^6.0.3",
+    "vite": "^6.4.3",
+    "vitest": "^4.1.8"
+  }
+}

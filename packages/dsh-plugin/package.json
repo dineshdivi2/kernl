@@ -1,0 +1,53 @@
+{
+  "name": "@kernl/dsh-plugin",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Out-of-tree DeepSeek Harness bundle for the Kernl control plane",
+  "type": "module",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    },
+    "./tools": {
+      "types": "./dist/tools.d.ts",
+      "default": "./dist/tools.js"
+    },
+    "./smoke": {
+      "types": "./dist/smoke.d.ts",
+      "default": "./dist/smoke.js"
+    },
+    "./live-smoke-guard": {
+      "types": "./dist/live-smoke-guard.d.ts",
+      "default": "./dist/live-smoke-guard.js"
+    },
+    "./cordis.patch.yml": "./cordis.patch.yml",
+    "./package.json": "./package.json"
+  },
+  "files": [
+    "dist/**/*.js",
+    "dist/**/*.d.ts",
+    "cordis.patch.yml",
+    "README.md"
+  ],
+  "dsh": {
+    "bundle": {
+      "patch": "./cordis.patch.yml"
+    }
+  },
+  "scripts": {
+    "build": "tsc -p tsconfig.json",
+    "typecheck": "tsc -p tsconfig.json --noEmit",
+    "test": "node --test ./test/*.test.mjs",
+    "smoke:fake": "tsx ./scripts/smoke.ts",
+    "smoke:dsh": "pwsh -NoProfile -File ./scripts/smoke-real-dsh.ps1",
+    "smoke:dsh:live": "pwsh -NoProfile -File ./scripts/smoke-real-dsh.ps1 -LiveDeepSeek",
+    "verify": "pnpm run build && pnpm run test"
+  },
+  "engines": {
+    "node": ">=22.19.0"
+  },
+  "license": "UNLICENSED"
+}
