@@ -14,7 +14,7 @@ V2 release `68bc532c0372c4e1ac756f6a17c2fe7b0f25bd1f` was a useful extension: pe
 
 However, all 35 inspected V2 promotion-pack copies referenced the baseline commit, and their approved pre-approval files had been overwritten. That broke the central AIR → code → evidence guarantee despite passing supplied tests. The original D: outputs and prior V1 main branch were preserved. This iteration lives on `codex/kernl-product-alpha` in the C: repo.
 
-The 25-product competitor research was useful idea collection, but all implementation decisions were still pending; it did not prove product readiness. We prioritized a falsifiable vertical slice over more catalog entries or an unbounded swarm. Full prior audit: `../audits/deepseek-alpha-v2-20260912/AUDIT_REPORT.md` (outside this export).
+The 25-product competitor research was useful idea collection, but all implementation decisions were still pending; it did not prove product readiness. We prioritized a falsifiable vertical slice over more catalog entries or an unbounded swarm. Full prior audit: `docs/DEEPSEEK_ALPHA_V2_AUDIT.md` (historical audit).
 
 ## Material improvements
 
