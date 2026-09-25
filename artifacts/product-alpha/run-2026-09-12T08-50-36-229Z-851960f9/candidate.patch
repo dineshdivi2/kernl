@@ -1,0 +1,61 @@
+diff --git a/src/api.ts b/src/api.ts
+index b822acc..bcbff6e 100644
+--- a/src/api.ts
++++ b/src/api.ts
+@@ -1,10 +1,11 @@
+ import type { JobAccepted, JobRecord, JobRequest } from './contracts.js'
+ import { createJob, getJob } from './store.js'
+-import { processJob } from './worker.js'
++import { enqueue } from './queue.js'
++import './worker.js'
+ 
+ export function submitJob(request: JobRequest): JobAccepted {
+   createJob(request.id)
+-  processJob(request.id, request.value)
++  enqueue({ eventId: `job-created:${request.id}`, jobId: request.id, value: request.value })
+   return { id: request.id, status: 'accepted' }
+ }
+ 
+diff --git a/src/queue.ts b/src/queue.ts
+new file mode 100644
+index 0000000..020bca2
+--- /dev/null
++++ b/src/queue.ts
+@@ -0,0 +1,15 @@
++import type { JobEvent } from './contracts.js'
++
++type Consumer = (event: JobEvent) => void
++let consumer: Consumer | undefined
++
++export function subscribe(next: Consumer): () => void {
++  consumer = next
++  return () => {
++    if (consumer === next) consumer = undefined
++  }
++}
++
++export function enqueue(event: JobEvent): void {
++  queueMicrotask(() => consumer?.(event))
++}
+diff --git a/src/worker.ts b/src/worker.ts
+index 7f20adf..717bdbb 100644
+--- a/src/worker.ts
++++ b/src/worker.ts
+@@ -1,5 +1,17 @@
++import type { JobEvent } from './contracts.js'
++import { subscribe } from './queue.js'
+ import { completeJob } from './store.js'
+ 
++const processedEventIds = new Set<string>()
++
+ export function processJob(jobId: string, value: string): void {
+   completeJob(jobId, value.toUpperCase())
+ }
++
++export function processEvent(event: JobEvent): void {
++  if (processedEventIds.has(event.eventId)) return
++  processedEventIds.add(event.eventId)
++  processJob(event.jobId, event.value)
++}
++
++subscribe(processEvent)

@@ -1,0 +1,140 @@
+Kernl deterministic verification transcript
+policy.executable_allowlist=node,node.exe
+policy.network=each child Node process preloads the loopback-only deny-external-network guard; package-manager commands are not invoked
+
+[attempt=0 gate=build]
+command="<USER_HOME>\\Documents\\AI ML projects ideas\\tools\\node-v22.23.1-win-x64\\node.exe" --require "<KERNL_ROOT>\\packages\\runtime\\assets\\deny-external-network.cjs" "<KERNL_ROOT>\\node_modules\\typescript\\bin\\tsc" -p tsconfig.json
+exitCode=0
+durationMs=2114
+status=passed
+stdout=<empty>
+stderr=<empty>
+
+[attempt=0 gate=unit]
+command="<USER_HOME>\\Documents\\AI ML projects ideas\\tools\\node-v22.23.1-win-x64\\node.exe" --require "<KERNL_ROOT>\\packages\\runtime\\assets\\deny-external-network.cjs" tests/unit.mjs
+exitCode=0
+durationMs=212
+status=passed
+stdout=unit: public behavior preserved
+stderr=<empty>
+
+[attempt=0 gate=contract]
+command="<USER_HOME>\\Documents\\AI ML projects ideas\\tools\\node-v22.23.1-win-x64\\node.exe" --require "<KERNL_ROOT>\\packages\\runtime\\assets\\deny-external-network.cjs" tests/public-contract.mjs
+exitCode=0
+durationMs=188
+status=passed
+stdout=contract: POST/GET schemas and result preserved
+stderr=<empty>
+
+[attempt=1 gate=build]
+command="<USER_HOME>\\Documents\\AI ML projects ideas\\tools\\node-v22.23.1-win-x64\\node.exe" --require "<KERNL_ROOT>\\packages\\runtime\\assets\\deny-external-network.cjs" "<KERNL_ROOT>\\node_modules\\typescript\\bin\\tsc" -p tsconfig.json
+exitCode=0
+durationMs=1380
+status=passed
+stdout=<empty>
+stderr=<empty>
+
+[attempt=1 gate=unit]
+command="<USER_HOME>\\Documents\\AI ML projects ideas\\tools\\node-v22.23.1-win-x64\\node.exe" --require "<KERNL_ROOT>\\packages\\runtime\\assets\\deny-external-network.cjs" tests/unit.mjs
+exitCode=0
+durationMs=160
+status=passed
+stdout=unit: public behavior preserved
+stderr=<empty>
+
+[attempt=1 gate=contract]
+command="<USER_HOME>\\Documents\\AI ML projects ideas\\tools\\node-v22.23.1-win-x64\\node.exe" --require "<KERNL_ROOT>\\packages\\runtime\\assets\\deny-external-network.cjs" tests/public-contract.mjs
+exitCode=0
+durationMs=217
+status=passed
+stdout=contract: POST/GET schemas and result preserved
+stderr=<empty>
+
+[attempt=1 gate=idempotency]
+command="<USER_HOME>\\Documents\\AI ML projects ideas\\tools\\node-v22.23.1-win-x64\\node.exe" --require "<KERNL_ROOT>\\packages\\runtime\\assets\\deny-external-network.cjs" tests/idempotency.mjs
+exitCode=1
+durationMs=103
+status=failed
+stdout=<empty>
+stderr=node:internal/modules/run_main:123
+    triggerUncaughtException(
+    ^
+
+AssertionError [ERR_ASSERTION]: the same event must not execute the worker effect twice
+
+2 !== 1
+
+    at <KERNL_ROOT>/.kernl/runs/run-202-184414bec211/integration/tests/idempotency.mjs:16:8 {
+  generatedMessage: false,
+  code: 'ERR_ASSERTION',
+  actual: 2,
+  expected: 1,
+  operator: 'strictEqual',
+  diff: 'simple'
+}
+
+Node.js v22.23.1
+
+[attempt=1 gate=architecture-invariants]
+command=in-process:architectureGate(read-only source inspection)
+exitCode=0
+durationMs=1
+status=passed
+stdout=<empty>
+stderr=<empty>
+
+[attempt=1 gate=secret-scan]
+command=in-process:secretGate(read-only source inspection)
+exitCode=0
+durationMs=20
+status=passed
+stdout=<empty>
+stderr=<empty>
+
+[attempt=2 gate=build]
+command="<USER_HOME>\\Documents\\AI ML projects ideas\\tools\\node-v22.23.1-win-x64\\node.exe" --require "<KERNL_ROOT>\\packages\\runtime\\assets\\deny-external-network.cjs" "<KERNL_ROOT>\\node_modules\\typescript\\bin\\tsc" -p tsconfig.json
+exitCode=0
+durationMs=1194
+status=passed
+stdout=<empty>
+stderr=<empty>
+
+[attempt=2 gate=unit]
+command="<USER_HOME>\\Documents\\AI ML projects ideas\\tools\\node-v22.23.1-win-x64\\node.exe" --require "<KERNL_ROOT>\\packages\\runtime\\assets\\deny-external-network.cjs" tests/unit.mjs
+exitCode=0
+durationMs=161
+status=passed
+stdout=unit: public behavior preserved
+stderr=<empty>
+
+[attempt=2 gate=contract]
+command="<USER_HOME>\\Documents\\AI ML projects ideas\\tools\\node-v22.23.1-win-x64\\node.exe" --require "<KERNL_ROOT>\\packages\\runtime\\assets\\deny-external-network.cjs" tests/public-contract.mjs
+exitCode=0
+durationMs=200
+status=passed
+stdout=contract: POST/GET schemas and result preserved
+stderr=<empty>
+
+[attempt=2 gate=idempotency]
+command="<USER_HOME>\\Documents\\AI ML projects ideas\\tools\\node-v22.23.1-win-x64\\node.exe" --require "<KERNL_ROOT>\\packages\\runtime\\assets\\deny-external-network.cjs" tests/idempotency.mjs
+exitCode=0
+durationMs=124
+status=passed
+stdout=idempotency: duplicate delivery produced one effect
+stderr=<empty>
+
+[attempt=2 gate=architecture-invariants]
+command=in-process:architectureGate(read-only source inspection)
+exitCode=0
+durationMs=1
+status=passed
+stdout=<empty>
+stderr=<empty>
+
+[attempt=2 gate=secret-scan]
+command=in-process:secretGate(read-only source inspection)
+exitCode=0
+durationMs=10
+status=passed
+stdout=<empty>
+stderr=<empty>
