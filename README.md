@@ -1,5 +1,7 @@
 # Kernl — architecture-to-software control-plane prototype
 
+Current focus: [AI-future exploration — 2026-10-13](docs/exploration/2026-10-13/README.md). This research examines industry pace, product alternatives, conditional AGI futures, and proposed comparisons. Implementation is parked during this exploration; the dated alpha evidence below remains unchanged.
+
 See [concept and verified status](PUBLIC_STATUS.md) for the dated distinction between working prototype and planned capabilities.
 
 ## Current iteration — September 12, 2026
