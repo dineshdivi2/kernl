@@ -2,6 +2,8 @@
 
 Last reviewed: 2026-09-25. This page separates the product direction from the local prototype's demonstrated behavior.
 
+Exploration added: 2026-10-13. See [Kernl in an advanced AI future](docs/exploration/2026-10-13/README.md) for industry evidence, product alternatives, conditional futures, and an exploration path. The current working hypothesis is architecture-significant changes with portable evidence tied to exact candidates. This is research, not new implementation verification or established demand. The earlier implementation goal is parked while this exploration is active.
+
 ## Product direction
 
 Kernl aims to turn an architect's proposed system change into a bounded, reviewable execution: architecture intent and catalog state define a task graph; scoped agents implement it in isolated Git worktrees; deterministic gates and evidence decide whether an exact candidate can be approved and promoted. The architecture record (AIR) states intended design, Git records implementation, and sealed evidence connects them.
