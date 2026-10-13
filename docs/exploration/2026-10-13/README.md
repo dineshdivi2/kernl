@@ -2,6 +2,8 @@
 
 Research snapshot: **2026-10-13**. Status: **exploration only**. This research updates product hypotheses; it does not advance the prototype's implementation or runtime verification status.
 
+Continuation: [Pass 2 — what must the extra layer earn?](../2026-10-13-pass-02/README.md) examines saved artifacts, native assurance controls, minimal architecture records, evidence invalidation, and total-effort economics. The original findings below are retained.
+
 ## Working conclusion
 
 The most promising direction to investigate is a system that helps an organization decide which AI-produced software changes it can accept: connect intended behavior, permitted actions, exact artifacts, independent checks, approval, and observed operation. Kernl's present architecture record (AIR), scoped plans, and evidence-bound promotion offer a starting point for this question.
