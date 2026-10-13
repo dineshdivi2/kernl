@@ -4,9 +4,11 @@
 
 Explore Kernl against current industry evolution and conditional AI/AGI futures. Read [the exploration index](docs/exploration/2026-10-13/README.md), including its source ledgers, product alternatives, possible workflows, objections, and stop rules.
 
-Next action (15–25 minutes): compare native runtime controls, ordinary CI/PR evidence, and the current Kernl change packet for the same synchronous-to-asynchronous example. Identify one evidence gap a reviewer actually needs resolved. This is a documentation comparison; do not start implementation or a live-provider experiment from this note.
+Latest continuation: [Pass 2](docs/exploration/2026-10-13-pass-02/README.md) inspects existing artifacts and compares native controls, minimal architecture records, evidence freshness, and hypothetical economics. The working hypothesis is a small per-change acceptance packet before a permanent architecture workspace.
 
-Done for this research snapshot: a dated industry review, current-source audit, conditional futures, product concept, and falsifiable exploration path are recorded. Demand, user understanding, comparative value, and deployment assurances remain open questions.
+Next action (15–25 minutes): prepare matched ordinary-PR and explicit-acceptance packets for the existing pending live candidate. Use identical source artifacts; label declared, checked, not-applicable, unknown, and operationally unobserved claims. Identify which reviewer questions become easier to answer. This is a documentation comparison; do not start implementation or a live-provider experiment from this note.
+
+Done for these research snapshots: the first industry/source/futures review and a second artifact/native-control/architecture/economics investigation are recorded. Twenty archived core-file entries matched recorded lengths and hashes in a read-only inspection; historical gates were not rerun. Demand, reviewer understanding, comparative value, and deployment assurances remain open questions.
 
 Scope: exploration and repository documentation. No runtime changes, model trials, deployment, recurring monitor, or new verification claim. Preserve historical evidence and inspectable failures.
 
