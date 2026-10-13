@@ -2,6 +2,8 @@
 
 Current focus: [AI-future exploration — 2026-10-13](docs/exploration/2026-10-13/README.md). This research examines industry pace, product alternatives, conditional AGI futures, and proposed comparisons. Implementation is parked during this exploration; the dated alpha evidence below remains unchanged.
 
+Latest continuation: [Pass 2 — native controls, saved evidence, architecture drift, and economics](docs/exploration/2026-10-13-pass-02/README.md).
+
 See [concept and verified status](PUBLIC_STATUS.md) for the dated distinction between working prototype and planned capabilities.
 
 ## Current iteration — September 12, 2026
